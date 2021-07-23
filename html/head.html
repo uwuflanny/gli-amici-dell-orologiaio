@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  margin: 0;
+}
+
+.container {
+  border: 2px solid #dedede;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 5px 0;
+}
+
+/* Clear floats */
+.container::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/* Style time text */
+.time-left {
+  float: left;
+  color: #999;
+}
+
+.maindiv {
+	margin-left:18%;
+	padding:1px 16px;
+	height:1000px;
+}
+
+.alert {
+  width: 100%;
+  position: relative;
+  padding: 20px;
+  background-color: #f44336;
+  color: white;
+}
+
+.footer {
+	position: absolute;
+	margin-left: 2%;
+	bottom: 0px;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  
+  width: 15%;
+  background-color: #f1f1f1;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+}
+
+li a {
+  display: block;
+  color: #000;
+  padding: 8px 16px;
+  text-decoration: none;
+  font-size: 25px;
+}
+
+li a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+li a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}
+
+</style>
+<title>Adrian FanPage</title>
+</head>
+<body>
