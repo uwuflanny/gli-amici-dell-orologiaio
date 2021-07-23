@@ -81,6 +81,12 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
 
         return str.encode(allmex)+f.read()
 
+    # funzione per inviare la risposta comune a tutte le richieste get
+    def prepare_response(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/html')
+        self.end_headers()
+
     # funzione per creare una pagina dal contenuto statico
     def send_static(self):
         f = open('./contents'+self.path,'rb')
@@ -97,12 +103,14 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
 
     # funzione per inviare la pagina html
     def send_page(self, content):
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
+        self.prepare_response()
         self.wfile.write(content)
 
-
+    # funzione per inviare un pdf
+    def send_pdf(self):
+        content = open('./contents'+self.path,'rb').read()
+        self.prepare_response()
+        self.wfile.write(content)
 
     """
     funzione per gestire la sessione dell'utente ad ogni suo stato
@@ -119,7 +127,10 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             self.send_static()
         else:
             # se l'utente e' loggato e non richiede pagine di login particolari gli inviamo la pagina richiesta
-            self.send_static()
+            if '.pdf' in self.path:
+                self.send_pdf()
+            else:
+                self.send_static()
 
 
     """
@@ -127,7 +138,10 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
     """
     # handler per richieste GET
     def do_GET(self):
-        self.manage_login()
+        # ignoro le richieste che riguardano l'icona
+        if '.ico' not in self.path:
+            self.manage_login()
+            
         
 
     """
