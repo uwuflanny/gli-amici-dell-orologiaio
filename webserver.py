@@ -12,7 +12,9 @@ import datetime
 waiting_refresh = threading.Event()
 allowed_ip = {}
 
-
+# nelle variabili head e footer vengono inseriti gli elementi statici della pagina
+# l'head della pagina contiene il title e le eventuali classi css, il footer, contenente la chiusura del tag html,
+# puo' essere riempito in un secondo momento
 with open('./html/head.html','rb') as a:
     head = a.read()
     a.close()
@@ -21,13 +23,11 @@ with open('./html/footer.html','rb') as a:
     a.close()
 
 
-
-
-
-
+# funzione che, massato un messaggio di errore, restituisce un div contenente il messaggio personalizzato
 def create_alert(message):
     return str.encode("""<div class="alert">"""+message+"""</div>""")
 
+# funzione che crea un navbar dinamico, scrivendo nel tag a relativo al login l'attuale stato della sessione
 def create_navbar(handler):
     ip = handler.client_address[0]
     return str.encode("""<ul>
@@ -36,30 +36,31 @@ def create_navbar(handler):
     	<li><a href="login.html" class="inactive" >"""+  ('Logged as: '+allowed_ip[ip] if ip in allowed_ip else 'Login')  +"""</a></li>
         </ul>""")
 
-
+# sessione che controlla se una coppia di valori utente:password e' presente nella lista degli utenti registrati
 def check_user(name, pwd):
     with open('users.txt') as f:
         return (name+':'+pwd) in f.read()     
 
 
-
+# classe principale del Web Server
 class ServerHandler(http.server.SimpleHTTPRequestHandler):        
-
 
     """
     funzioni relativa alla creazione di pagine html di vario tipo
     """
-    #funzione che prende il content di una pagina da file
+    # funzione che prende il content di una pagina da file
     def get_content(self):
+
+        # in base al percordo richiesto dall' utente andiamo a leggere il contenuto del relativo file
         f = open('./contents'+self.path,'rb')
-        
         allmex = ""       
 
+        # se l'utente ha richiesto la pagina con la messageboard, vengono letti dal file json tutti i messaggi
+        # i dati di ognuno vengono inseriti in un div e sotto questi viene aggiunto il form di aggiunta messaggio
         if self.path == '/messageboard.html':
             allmex = "<div class='maindiv'>"
-            jf = open('data_file.json',)
+            jf = open('messages.json',)
             data = json.load(jf)
-            
             for i in data['mess']:
                 allmex += """<div class="container">
                     <h2>"""+i['sender']+""":</h2>
@@ -107,13 +108,17 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
     funzione per gestire la sessione dell'utente ad ogni suo stato
     """
     def manage_login(self):
+        # in base allo stato di login dell' utente eseguiamo diversi reindirizzamenti
         if self.client_address[0] not in allowed_ip:
+            # se l'utente non e' loggato gli inviamo la pagina di login
             self.path = '/login.html'
             self.send_alert('Eseguire il login per accedere ai contenuti.')
         elif self.path == '/login.html':
+            # se l'utente e' loggato e chiede la pagina di login gli restituiamo la pagina di logout
             self.path = '/logout.html'
             self.send_static()
         else:
+            # se l'utente e' loggato e non richiede pagine di login particolari gli inviamo la pagina richiesta
             self.send_static()
 
 
@@ -168,7 +173,8 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             "time": str(datetime.datetime.now())
         }
 
-        with open('data_file.json','r+') as file:
+        # serializzaiamo ed inseriamo in append un nuovo messaggio al, file json
+        with open('messages.json','r+') as file:
             file_data = json.load(file)
             file_data["mess"].append(users)
             file.seek(0)
@@ -193,8 +199,9 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
 
 server = socketserver.ThreadingTCPServer(('127.0.0.1', 8080), ServerHandler)
 
+# handler per liberare le risorse socket una volta premuto su terminale la shortcul Ctrl+C
 def signal_handler(signal, frame):
-    print( 'Exiting http server (Ctrl+C pressed)')
+    print( 'Exiting server (Ctrl+C pressed)')
     try:
       if(server):
         server.server_close()
@@ -202,7 +209,7 @@ def signal_handler(signal, frame):
       waiting_refresh.set()
       sys.exit(0)
 
-
+# avvio del Web Server da main
 def main():
     server.daemon_threads = True 
     server.allow_reuse_address = True  

@@ -1,2 +1,2 @@
 flan:sus
-utenteprova:password
+utenteprova:pwd
